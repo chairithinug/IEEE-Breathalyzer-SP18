@@ -1,4 +1,4 @@
-# IEEE-Breathalyzer-SP18
+## IEEE-Breathalyzer-SP18
 
 # IEEE-Breathalyzer
 This is a project for IEEE in Spring 2019, using MQ-3, LCD, and Arduino Uno. It also uses an interrupt to turn on and off the display.
