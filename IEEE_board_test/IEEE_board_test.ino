@@ -1,18 +1,35 @@
-#define POWER_LED_PIN     4
-#define DETECTION_LED_PIN 3
-#define PIEZO_PIN         2
-#define MQ_PIN            A0
+// Screen codes taken from https://www.youtube.com/watch?v=PrIAnDZ9dp8
+// Please check him out!
+
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+
+#include <Fonts/FreeMonoBold12pt7b.h>
+#include <Fonts/FreeMono9pt7b.h>
+
+Adafruit_SSD1306 display;
+
+#define POWER_LED_PIN     5
+#define DETECTION_LED_PIN 4
+#define PIEZO_PIN         3
+#define MQ_PIN            A7
+// SDA  A4
+// SCL  A5
 
 void setup() {
-  Serial.begin(115200);
+  Serial.begin(9600);
   while (!Serial);
+  Serial.println("initializing ...");
   pin_init();
+  screen_init();
 
   testPowerLED();
   delay(5000);
   testDetectionLED();
   delay(5000);
   testPiezo();
+  delay(5000);
+  testScreen();
   delay(5000);
   testMQ();
   delay(5000);
@@ -26,14 +43,23 @@ void loop() {
   Serial.print("reading: ");
   Serial.println(reading);
   delay(1000);
+  display.clearDisplay();
 }
 
 void pin_init() {
-  Serial.println("initializing ...");
   pinMode(POWER_LED_PIN, OUTPUT);
   pinMode(DETECTION_LED_PIN, OUTPUT);
   pinMode(PIEZO_PIN, OUTPUT);
   pinMode(MQ_PIN, INPUT);
+}
+
+void screen_init() {
+  display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
+  display.setTextColor(WHITE);
+  display.setRotation(0);
+  display.setTextWrap(true);
+  display.dim(0);
+  display.clearDisplay();
 }
 
 void testPowerLED() {
@@ -78,4 +104,22 @@ void testMQ() {
   }
   Serial.print("average is: ");
   Serial.println(sum / 10);
+}
+
+void testScreen() {
+  Serial.println("testing Screen");
+  display.setFont(&FreeMono9pt7b);
+  display.setTextSize(0);
+  display.setCursor(0, 10);
+  display.println("Hello");
+  display.drawTriangle(40,40,   50,20,   60,40, WHITE);
+  display.fillTriangle(0,63,   15,45,   30,63, WHITE);
+  display.drawLine(40, 63, 70, 63, WHITE);
+  display.drawCircle(47, 36, 20, WHITE);
+  display.fillCircle(12, 27, 10, WHITE);
+  display.fillRoundRect(58, 0, 18, 18, 5, WHITE);
+  display.drawRect(79, 0, 49, 27, WHITE);
+  display.setFont(&FreeMonoBold12pt7b);
+  display.drawRoundRect(79, 37, 49, 27, 8, WHITE);
+  display.display();
 }
