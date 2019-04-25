@@ -19,12 +19,13 @@
 Adafruit_SSD1306 display; // create an instance of the display
 
 // MQ macros
-#define WARMUP_PERIOD     1000 // (in milliseconds) MQ3 needs some time to warm up
-#define SAMPLES           5   // number of samples MQ sensor should read
-#define THRESHOLD         900 // the threshold value that will trigger the sensor to start sampling
-#define DRUNK             970 // this is a raw value from the sensor, higher than this means you had alcohol!
+#define WARMUP_PERIOD     30000 // (in milliseconds) MQ3 needs some time to warm up
+#define SAMPLES           10   // number of samples MQ sensor should read
+#define THRESHOLD         970 // the threshold value that will trigger the sensor to start sampling
+#define DRUNK             1000 // this is a raw value from the sensor, higher than this means you had alcohol!
 // the higher, the better ;)
-// typical value (air) is around 830-840
+// typical value (air) is below 900
+// normal blow is around 950
 
 // piezo macros
 #define FREQ              860 // the frequency at which it beeps
@@ -38,7 +39,7 @@ void setup() {
   Serial.begin(9600);                 // FOR DEBUGGING
   digitalWrite(POWER_LED_PIN, HIGH);  // signal life
   Serial.println("warming up");
-  delay(WARMUP_PERIOD);               // MQ sensor needs some warmup before it can measure more precisely
+  delay_with_loading(WARMUP_PERIOD);               // MQ sensor needs some warmup before it can measure more precisely
   // arduino will be stuck here for that amount of time
 }
 
@@ -56,14 +57,19 @@ void loop() {
     digitalWrite(DETECTION_LED_PIN, HIGH);
 
     for (int i = 0; i < SAMPLES; i++) {
-      alcohol_sum = alcohol_sum + analogRead(MQ_PIN);
-      delay(1000); // take a sample every second
-      lcd_add("..");
+      int value = analogRead(MQ_PIN);
+      alcohol_sum = alcohol_sum + value;
+      Serial.print("reading: ");
+      Serial.println(value);
+      delay(250); // take a sample every half a second
+      int x = map(i, 0, SAMPLES, 0, 120); // this function scales the value from 0-delay_time to 0-120
+      display.fillRect(4, 44, x, 8, WHITE); // Draw filled rectangle (x,y,width,height,color) from top-left to down-right
+      display.display();
     }
 
     digitalWrite(DETECTION_LED_PIN, LOW);                 // let user know it is done measuring
     tone(PIEZO_PIN, FREQ, DURATION);
-    delay(500);
+    delay(250);
     tone(PIEZO_PIN, FREQ, DURATION);
 
     float alcohol_average = alcohol_sum / SAMPLES;        // this variable will hold the average value
@@ -81,7 +87,7 @@ void loop() {
       lcd_print("  You are    sober.\n   Drink     more!");
       Serial.println("You are sober. Drink more!");
     }
-    delay(5000);                                          // keep displaying before clearing the screen
+    delay(10000);                                          // keep displaying before clearing the screen
   }
   else {
     // do nothing
@@ -114,6 +120,20 @@ void screen_init() {
 void welcome() {
   lcd_print("\n DrinkBoy\n\n   2000!");
   delay(5000);
+  display.clearDisplay();
+  display.display();
+}
+
+void delay_with_loading(int delay_time) {
+  display.setCursor(4, 16);
+  display.print("warming up");
+  display.drawRect(4, 44, 120, 8, WHITE);
+  for (int i = 0; i < delay_time; i = i + 1000) {
+    int x = map(i, 0, delay_time, 0, 120); // this function scales the value from 0-delay_time to 0-120
+    display.fillRect(4, 44, x, 8, WHITE); // Draw filled rectangle (x,y,width,height,color) from top-left to down-right
+    display.display();
+    delay(1000);                            
+  }
 }
 
 void lcd_print(String text) {
