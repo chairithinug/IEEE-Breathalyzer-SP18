@@ -1,4 +1,5 @@
 # IEEE-Breathalyzer-SP19
+![Alt text](/Breathalyzer_DrinkBoy2000.jpg)
 
 ## IEEE-Breathalyzer
 This is a project for IEEE in Spring 2019, using MQ-3, LCD, and Arduino Uno.
